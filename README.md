@@ -1,17 +1,14 @@
-# SCD-MoE Packaged Inference Code
+# SCD-MoE
 
-This directory contains a compact inference package for SCD-MoE with the three
-released checkpoints used in the paper experiments.
+This repository contains the official compact implementation of SCD-MoE,
+including the model definition, training script, and evaluation script used in
+the paper experiments.
 
 ## Contents
 
 - `changedetection/`: model, dataset, config, and metric code required for inference.
 - `classification/`: VSSM backbone support code.
 - `kernels/`: selective scan CUDA kernel sources used by the backbone.
-- `pretrained_weight/vssm_tiny_0230_ckpt_epoch_262.pth`: ImageNet pretrained VSSM-Tiny backbone.
-- `checkpoints/SECOND/scd_moe_second.pth`: SECOND checkpoint.
-- `checkpoints/JL1/scd_moe_jl1.pth`: JL1 checkpoint.
-- `checkpoints/Landsat/scd_moe_landsat.pth`: Landsat-SCD checkpoint.
 - `tools/infer_scd_moe.py`: unified evaluation entrypoint.
 - `tools/train_scd_moe.py`: unified training entrypoint.
 
@@ -19,6 +16,30 @@ The released model path is intentionally compact. `changedetection/models/SCDMoE
 contains the SCD-MoE network, `changedetection/models/decoder.py` contains the
 unified multi-scale decoder, and `changedetection/models/moes/dense_MoE.py`
 contains only the IA-MoE and TD-MoE modules used by the released checkpoints.
+
+## Environment
+
+Create a Python environment with PyTorch, CUDA support, and the dependencies in
+`requirements.txt`.
+
+```bash
+pip install -r requirements.txt
+```
+
+The VSSM backbone uses the selective scan CUDA extension under
+`kernels/selective_scan`. Build it if your environment does not already provide
+the required operator.
+
+## Checkpoints
+
+Download the released model weights and place them as follows:
+
+```text
+pretrained_weight/vssm_tiny_0230_ckpt_epoch_262.pth
+checkpoints/SECOND/scd_moe_second.pth
+checkpoints/JL1/scd_moe_jl1.pth
+checkpoints/Landsat/scd_moe_landsat.pth
+```
 
 ## Default Dataset Paths
 
@@ -33,15 +54,15 @@ Override them with `--test_dataset_path` and `--test_data_list_path` if needed.
 ## Evaluation
 
 ```bash
-conda run -n foba python /home/hq/SCD-MoE/tools/infer_scd_moe.py --dataset all
+python tools/infer_scd_moe.py --dataset all
 ```
 
 Run a single dataset:
 
 ```bash
-conda run -n foba python /home/hq/SCD-MoE/tools/infer_scd_moe.py --dataset SECOND
-conda run -n foba python /home/hq/SCD-MoE/tools/infer_scd_moe.py --dataset JL1
-conda run -n foba python /home/hq/SCD-MoE/tools/infer_scd_moe.py --dataset Landsat
+python tools/infer_scd_moe.py --dataset SECOND
+python tools/infer_scd_moe.py --dataset JL1
+python tools/infer_scd_moe.py --dataset Landsat
 ```
 
 Metrics are written to `results/eval_metrics.csv`.
@@ -52,15 +73,15 @@ The training script uses dataset-specific defaults matching the packaged
 SCD-MoE setting. Checkpoints are saved under `saved_models/` by default.
 
 ```bash
-conda run -n foba python /home/hq/SCD-MoE/tools/train_scd_moe.py --dataset SECOND
-conda run -n foba python /home/hq/SCD-MoE/tools/train_scd_moe.py --dataset JL1
-conda run -n foba python /home/hq/SCD-MoE/tools/train_scd_moe.py --dataset Landsat
+python tools/train_scd_moe.py --dataset SECOND
+python tools/train_scd_moe.py --dataset JL1
+python tools/train_scd_moe.py --dataset Landsat
 ```
 
 Useful overrides:
 
 ```bash
-conda run -n foba python /home/hq/SCD-MoE/tools/train_scd_moe.py \
+python tools/train_scd_moe.py \
   --dataset SECOND \
   --train_dataset_path /path/to/train \
   --train_data_list_path /path/to/train.txt \
@@ -74,6 +95,6 @@ conda run -n foba python /home/hq/SCD-MoE/tools/train_scd_moe.py \
 For a quick environment check:
 
 ```bash
-conda run -n foba python /home/hq/SCD-MoE/tools/train_scd_moe.py \
+python tools/train_scd_moe.py \
   --dataset SECOND --max_iters 1 --num_workers 0 --val_interval 0
 ```
